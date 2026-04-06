@@ -156,7 +156,7 @@ invoice-web은 견적서를 보내는 프리랜서/1인 업체(발행자)와 견
 
 ---
 
-### Phase 6: 배포 (Vercel)
+### Phase 6: 배포 (Vercel) ✅
 
 - **Task-012: 전체 UI 다듬기 및 반응형 최적화** ✅ - 완료
   - See: `/tasks/012-ui-polish.md`
@@ -170,13 +170,12 @@ invoice-web은 견적서를 보내는 프리랜서/1인 업체(발행자)와 견
   - ✅ `globals.css` `--font-sans` 순환참조 버그 수정
   - ✅ `app/quote/[pageId]/loading.tsx` 로딩 스켈레톤 UI 추가
 
-- **Task-013: Vercel 배포 및 운영 환경 구성** 🚧 - 진행 중
+- **Task-013: Vercel 배포 및 운영 환경 구성** ✅ - 완료
   - ✅ 프로덕션 빌드 검증 (`npm run build` 및 `npm run check-all` 성공 확인)
   - ✅ git push 완료
-  - Vercel 프로젝트 생성 및 GitHub 연동
-  - Vercel 환경 변수 설정 (`NOTION_API_KEY`, `NOTION_DATABASE_ID`)
-  - 커스텀 도메인 설정 (선택)
-  - 배포 후 실제 노션 데이터로 E2E 검증
+  - ✅ Vercel CLI 배포 완료
+  - ✅ Vercel 환경 변수 설정 (`NOTION_API_KEY`, `NOTION_DATABASE_ID`, `NOTION_ITEMS_DATABASE_ID`)
+  - ✅ 배포 후 실제 노션 데이터로 E2E 검증 완료
 
 ---
 
@@ -207,3 +206,22 @@ invoice-web은 견적서를 보내는 프리랜서/1인 업체(발행자)와 견
   - ✅ 주요 CVE 수정: RSC HTTP deserialization DoS, Server Components DoS, Server Actions 소스 코드 노출
   - ✅ 기타 의존성 취약점 수정: brace-expansion, minimatch, tar, picomatch 등 11건
   - ✅ `npm run check-all` 통과 및 `npm run build` 성공 확인
+
+---
+
+## 프로젝트 완료 요약
+
+**전체 완료일**: 2026-04-06
+
+모든 Phase(1~7)의 17개 Task가 완료되었습니다.
+
+| Phase | 설명 | Task 수 | 상태 |
+| ----- | ---- | ------- | ---- |
+| Phase 1 | 프로젝트 초기 설정 | 3 | ✅ 완료 |
+| Phase 2 | Notion API 연동 | 3 | ✅ 완료 |
+| Phase 3 | 견적서 뷰 UI 구현 | 3 | ✅ 완료 |
+| Phase 4 | PDF 다운로드 구현 | 3 | ✅ 완료 |
+| Phase 5 | 오류 처리 | 1 | ✅ 완료 |
+| Phase 6 | 배포 (Vercel) | 2 | ✅ 완료 |
+| Phase 7 | 운영 안정성 강화 | 4 | ✅ 완료 |
+| **합계** | | **17** (Task-007~009 통합 포함) | **✅ 전체 완료** |
