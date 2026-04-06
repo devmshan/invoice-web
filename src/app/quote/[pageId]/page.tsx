@@ -1,7 +1,12 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getQuote } from "@/lib/notion";
+import { calcQuoteTotals } from "@/lib/utils/currency";
 import { PdfDownloadButton } from "./_components/pdf-download-button";
+import { QuoteHeader } from "./_components/quote-header";
+import { QuoteParties } from "./_components/quote-parties";
+import { QuoteItemsTable } from "./_components/quote-items-table";
+import { QuoteSummary } from "./_components/quote-summary";
 
 interface QuotePageProps {
   params: Promise<{ pageId: string }>;
@@ -18,6 +23,11 @@ export async function generateMetadata({
   return {
     title: `${result.data.title} | Invoice Web`,
     description: `${result.data.issuer_name}의 견적서`,
+    openGraph: {
+      title: `${result.data.title} | Invoice Web`,
+      description: `${result.data.issuer_name}의 견적서`,
+      type: "website",
+    },
   };
 }
 
@@ -33,134 +43,73 @@ export default async function QuotePage({ params }: QuotePageProps) {
   }
 
   const quote = result.data;
-
   const isExpired = new Date(quote.valid_until) < new Date();
-  const subtotal = quote.items.reduce(
-    (sum, item) => sum + item.quantity * item.unit_price,
-    0,
-  );
-  const tax = Math.round(subtotal * 0.1);
-  const total = subtotal + tax;
+  const { subtotal, tax, total } = calcQuoteTotals(quote.items);
 
   return (
-    <main className="min-h-screen bg-background py-10 print:py-0">
-      <div className="mx-auto max-w-3xl px-4">
-        {/* 만료 배너 */}
+    /* 인쇄 시: 여백 제거, 배경색 제거 */
+    <main className="min-h-screen bg-muted/30 py-8 print:min-h-0 print:bg-transparent print:py-0 sm:py-12">
+      <div className="mx-auto max-w-3xl px-4 print:px-0">
+        {/* 만료 배너: 인쇄 시 숨김 */}
         {isExpired && (
-          <div className="mb-6 rounded-md border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive print:hidden">
-            이 견적서는 유효기간이 만료되었습니다. 발행자에게 문의해 주세요.
+          <div
+            role="alert"
+            className="mb-5 flex items-start gap-2.5 rounded-md border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive print:hidden"
+          >
+            <span className="mt-0.5 shrink-0">⚠</span>
+            <span>
+              이 견적서는 유효기간이 만료되었습니다. 발행자에게 문의해 주세요.
+            </span>
           </div>
         )}
 
-        {/* 견적서 본문 */}
-        <div className="rounded-lg border bg-card p-8 shadow-sm print:border-0 print:shadow-none">
-          {/* 헤더: 제목 + 발행 정보 */}
-          <div className="flex items-start justify-between gap-4">
-            <div>
-              <h1 className="text-2xl font-bold">{quote.title}</h1>
-              <p className="text-muted-foreground mt-1 text-sm">
-                견적서 번호: <span className="font-mono">{quote.id}</span>
-              </p>
-            </div>
-            <div className="text-right text-sm text-muted-foreground space-y-1">
-              <p>발행일: {quote.issue_date}</p>
-              <p>
-                유효기간:{" "}
-                <span
-                  className={isExpired ? "text-destructive font-medium" : ""}
-                >
-                  {quote.valid_until}
-                </span>
-              </p>
-            </div>
+        {/* 견적서 본문 카드: 인쇄 시 테두리/그림자 제거 */}
+        <div className="rounded-lg border bg-card shadow-sm print:rounded-none print:border-0 print:shadow-none">
+          {/* 상단 패딩 영역 */}
+          <div className="p-6 sm:p-8">
+            <QuoteHeader
+              title={quote.title}
+              id={quote.id}
+              issueDate={quote.issue_date}
+              validUntil={quote.valid_until}
+              isExpired={isExpired}
+            />
           </div>
 
-          <div className="my-6 border-t" />
+          <div className="border-t" />
 
-          {/* 발행자 / 수신자 */}
-          <div className="grid gap-6 sm:grid-cols-2">
-            <div className="space-y-1">
-              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                발행자
-              </p>
-              <p className="font-semibold">{quote.issuer_name}</p>
-              <p className="text-sm text-muted-foreground">
-                {quote.issuer_contact}
-              </p>
-              <p className="text-sm text-muted-foreground">
-                {quote.issuer_email}
-              </p>
-            </div>
-            <div className="space-y-1">
-              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                수신자
-              </p>
-              <p className="font-semibold">{quote.client_name}</p>
-              <p className="text-sm text-muted-foreground">
-                {quote.client_company}
-              </p>
-            </div>
+          <div className="p-6 sm:p-8">
+            <QuoteParties
+              issuerName={quote.issuer_name}
+              issuerContact={quote.issuer_contact}
+              issuerEmail={quote.issuer_email}
+              clientName={quote.client_name}
+              clientCompany={quote.client_company}
+            />
           </div>
 
-          <div className="my-6 border-t" />
+          <div className="border-t" />
 
-          {/* 견적 항목 테이블 */}
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b text-left text-muted-foreground">
-                <th className="pb-2 font-medium">항목</th>
-                <th className="pb-2 text-right font-medium">수량</th>
-                <th className="pb-2 text-right font-medium">단가</th>
-                <th className="pb-2 text-right font-medium">소계</th>
-              </tr>
-            </thead>
-            <tbody>
-              {quote.items.map((item, index) => (
-                <tr key={index} className="border-b last:border-0">
-                  <td className="py-3">{item.item_name}</td>
-                  <td className="py-3 text-right">
-                    {item.quantity.toLocaleString()}
-                  </td>
-                  <td className="py-3 text-right">
-                    {item.unit_price.toLocaleString()}원
-                  </td>
-                  <td className="py-3 text-right">
-                    {(item.quantity * item.unit_price).toLocaleString()}원
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-
-          <div className="my-6 border-t" />
-
-          {/* 금액 합산 */}
-          <div className="flex justify-end">
-            <div className="w-64 space-y-2 text-sm">
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">소계</span>
-                <span>{subtotal.toLocaleString()}원</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">세금 (10%)</span>
-                <span>{tax.toLocaleString()}원</span>
-              </div>
-              <div className="flex justify-between border-t pt-2 font-bold">
-                <span>합계</span>
-                <span>{total.toLocaleString()}원</span>
-              </div>
-            </div>
+          {/* 테이블 섹션: 좌우 패딩 포함 */}
+          <div className="px-6 py-6 sm:px-8">
+            <QuoteItemsTable items={quote.items} />
           </div>
 
-          {/* 메모 */}
+          <div className="border-t" />
+
+          <div className="p-6 sm:p-8">
+            <QuoteSummary subtotal={subtotal} tax={tax} total={total} />
+          </div>
+
+          {/* 메모 섹션: 내용 있을 때만 표시 */}
           {quote.note && (
             <>
-              <div className="my-6 border-t" />
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">
+              <div className="border-t" />
+              <div className="p-6 sm:p-8">
+                <p className="text-muted-foreground mb-2 text-xs font-semibold uppercase tracking-widest">
                   메모
                 </p>
-                <p className="text-sm text-muted-foreground whitespace-pre-wrap">
+                <p className="text-muted-foreground whitespace-pre-wrap text-sm leading-relaxed">
                   {quote.note}
                 </p>
               </div>
@@ -168,8 +117,12 @@ export default async function QuotePage({ params }: QuotePageProps) {
           )}
         </div>
 
-        {/* PDF 다운로드 버튼 */}
-        <div className="mt-6 flex justify-end print:hidden">
+        {/* PDF 다운로드 버튼: 인쇄 시 숨김 */}
+        <div className="mt-5 flex items-center justify-between print:hidden">
+          {/* 좌측 안내 문구 */}
+          <p className="text-muted-foreground text-xs">
+            브라우저의 인쇄 기능으로도 PDF를 저장할 수 있습니다.
+          </p>
           <PdfDownloadButton />
         </div>
       </div>
