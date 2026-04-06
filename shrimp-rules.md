@@ -45,7 +45,7 @@ invoice-web/
 │       ├── utils.ts                           # cn() 등 공통 유틸
 │       └── notion/                            # Notion API 관련 (Task-004~006에서 생성)
 │           ├── client.ts                      # Notion 클라이언트 초기화
-│           ├── queries.ts                     # pages.retrieve, blocks.children.list
+│           ├── queries.ts                     # pages.retrieve, databases.query (items DB 필터링)
 │           └── parser.ts                      # Notion 응답 → Quote 타입 변환
 └── docs/
     ├── PRD.md
@@ -93,14 +93,15 @@ export default function QuotePage({ params }: { params: { pageId: string } }) {
 | 파일                    | 역할                                                                 |
 | ----------------------- | -------------------------------------------------------------------- |
 | `lib/notion/client.ts`  | `new Client({ auth: process.env.NOTION_API_KEY })` 초기화            |
-| `lib/notion/queries.ts` | `notion.pages.retrieve()`, `notion.blocks.children.list()` 호출 함수 |
+| `lib/notion/queries.ts` | `notion.pages.retrieve()` (invoices), `notion.databases.query()` (items DB Relation 필터링) |
 | `lib/notion/parser.ts`  | Notion API 응답 → `Quote` 타입 변환, Zod 검증                        |
 
 ### 4-3. 환경 변수
 
 ```
-NOTION_API_KEY      # 필수 - Notion Integration Secret
-NOTION_DATABASE_ID  # 선택 - 목록 조회 시 필요
+NOTION_API_KEY            # 필수 - Notion Integration Secret
+NOTION_DATABASE_ID        # 필수 - invoices 데이터베이스 ID
+NOTION_ITEMS_DATABASE_ID  # 필수 - items 데이터베이스 ID
 ```
 
 - 환경 변수 미설정 시 명확한 에러 메시지 throw (silent fail 금지)
@@ -126,6 +127,7 @@ NOTION_DATABASE_ID  # 선택 - 목록 조회 시 필요
 ```typescript
 // lib/types.ts 에 정의된 핵심 타입
 type QuoteItem = { item_name: string; quantity: number; unit_price: number };
+type QuoteStatus = "pending" | "accepted" | "rejected";
 type Quote = {
   id: string;
   title: string;
@@ -137,6 +139,7 @@ type Quote = {
   client_name: string;
   client_company: string;
   note: string;
+  status: QuoteStatus;
   items: QuoteItem[];
 };
 type QuoteError = "NOT_FOUND" | "EXPIRED" | "API_ERROR" | "UNAUTHORIZED";

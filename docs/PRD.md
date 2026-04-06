@@ -141,54 +141,9 @@ invoice-web 내비게이션
 
 ### 노션 데이터베이스 스키마 (F010)
 
-발행자가 노션에 구성해야 하는 데이터베이스 속성 정의입니다.
+상세 스키마 정의는 [@/docs/guides/notion-schema.md](./guides/notion-schema.md) 참조.
 
-#### Quote (견적서 페이지)
-
-| 필드           | 설명                           | 노션 속성 타입 |
-| -------------- | ------------------------------ | -------------- |
-| title          | 견적서 제목 (견적서 번호 포함) | Title          |
-| issue_date     | 발행일                         | Date           |
-| valid_until    | 유효기간 만료일                | Date           |
-| issuer_name    | 발행자 이름/회사명             | Text           |
-| issuer_contact | 발행자 연락처                  | Phone          |
-| issuer_email   | 발행자 이메일                  | Email          |
-| client_name    | 수신자 이름                    | Text           |
-| client_company | 수신자 회사명                  | Text           |
-| note           | 견적서 하단 메모               | Text           |
-
-#### QuoteItem (견적 항목, 노션 하위 블록으로 구성)
-
-| 필드       | 설명                                 | 타입   |
-| ---------- | ------------------------------------ | ------ |
-| item_name  | 항목명                               | Text   |
-| quantity   | 수량                                 | Number |
-| unit_price | 단가 (원)                            | Number |
-| subtotal   | 소계 (quantity x unit_price, 계산값) | Number |
-
-### 코드 내 타입 정의 (TypeScript)
-
-```typescript
-type QuoteItem = {
-  item_name: string;
-  quantity: number;
-  unit_price: number;
-};
-
-type Quote = {
-  id: string; // 노션 페이지 ID
-  title: string;
-  issue_date: string;
-  valid_until: string;
-  issuer_name: string;
-  issuer_contact: string;
-  issuer_email: string;
-  client_name: string;
-  client_company: string;
-  note: string;
-  items: QuoteItem[];
-};
-```
+`invoices`, `items` 2개의 데이터베이스를 사용하며, `items.invoice` Relation으로 연결합니다.
 
 ---
 
@@ -212,7 +167,7 @@ type Quote = {
 
 ### 외부 API 연동
 
-- **Notion API** (`@notionhq/client`) - 견적서 데이터 소스. 서버 사이드에서만 호출 (API 키 보호)
+- **Notion API** (`@notionhq/client`) - 견적서 데이터 소스. 서버 사이드에서만 호출 (API 키 보호). `src/lib/notion.ts`에 클라이언트 초기화, 데이터 조회, 파싱, 오류 처리 통합 구현 완료
 
 ### PDF 생성
 
@@ -230,20 +185,28 @@ type Quote = {
 
 ## 노션 API 연동 구현 메모
 
+> **구현 완료**: `src/lib/notion.ts` 단일 파일에 클라이언트 초기화, 데이터 조회, 파싱, 오류 처리 통합 구현됨.
+
 ```
 환경 변수 (필수)
 - NOTION_API_KEY: 노션 통합(Integration) 시크릿 키
-- NOTION_DATABASE_ID: 견적서 데이터베이스 ID (선택, 목록 조회 시 필요)
+- NOTION_DATABASE_ID: invoices 데이터베이스 ID
+- NOTION_ITEMS_DATABASE_ID: items 데이터베이스 ID
 
-데이터 조회 흐름
+데이터 조회 흐름 (src/lib/notion.ts → getQuote 함수)
 1. /quote/[pageId] 접속
 2. Next.js 서버 컴포넌트에서 notion.pages.retrieve({ page_id: pageId }) 호출
-3. notion.blocks.children.list({ block_id: pageId }) 로 항목 블록 조회
+3. notion.databases.query({
+     database_id: NOTION_ITEMS_DATABASE_ID,
+     filter: { property: "invoice", relation: { contains: pageId } },
+     sorts: [{ property: "sort_order", direction: "ascending" }]
+   }) 로 연결된 항목 조회 (Promise.all로 병렬 실행)
 4. 응답 데이터를 Quote 타입으로 변환
 5. 클라이언트에 렌더링
 
-오류 처리
-- APIResponseError (404): 존재하지 않는 페이지 → 오류 페이지로 이동
-- APIResponseError (401): API 키 문제 → 오류 페이지로 이동
-- 유효기간 초과: 페이지는 표시하되 만료 배너 표시
+오류 처리 (구현 완료)
+- APIResponseError (404): 존재하지 않는 페이지 → { error: "NOT_FOUND" } 반환 → notFound()
+- APIResponseError (401): API 키 문제 → { error: "UNAUTHORIZED" } 반환 → Error throw
+- 기타 예외: { error: "API_ERROR" } 반환 → Error throw
+- 유효기간 초과: 페이지는 표시하되 만료 배너 표시 (app/quote/[pageId]/page.tsx에서 처리)
 ```

@@ -69,38 +69,36 @@ invoice-web은 견적서를 보내는 프리랜서/1인 업체(발행자)와 견
 
 ---
 
-### Phase 2: Notion API 연동 (F001, F010)
+### Phase 2: Notion API 연동 (F001, F010) ✅
 
-- **Task-004: Notion API 클라이언트 설정 및 환경 구성** - 우선순위
-  - `@notionhq/client` 패키지 설치
-  - `.env.local`에 환경 변수 정의 (`NOTION_API_KEY`, `NOTION_DATABASE_ID`)
-  - `.env.example` 파일 생성 (환경 변수 목록 문서화)
-  - `lib/notion/client.ts`에 Notion API 클라이언트 초기화 로직 구현
-  - 환경 변수 미설정 시 명확한 에러 메시지 출력
+- **Task-004: Notion API 클라이언트 설정 및 환경 구성** ✅ - 완료
+  - ✅ `@notionhq/client` 패키지 설치
+  - ✅ `.env.local`에 환경 변수 정의 (`NOTION_API_KEY`, `NOTION_DATABASE_ID`, `NOTION_ITEMS_DATABASE_ID`)
+  - ✅ `.env.example` 파일 생성 (환경 변수 목록 문서화)
+  - ✅ `lib/notion.ts`에 Notion API 클라이언트 초기화 로직 구현
+  - ✅ 환경 변수 미설정 시 명확한 에러 메시지 출력
 
-- **Task-005: Notion 데이터 조회 및 타입 변환 구현**
-  - `lib/notion/queries.ts`에 페이지 데이터 조회 함수 구현 (`notion.pages.retrieve`)
-  - `lib/notion/queries.ts`에 하위 블록(견적 항목) 조회 함수 구현 (`notion.blocks.children.list`)
-  - 노션 API 응답을 `Quote` 타입으로 변환하는 파서 함수 구현 (`lib/notion/parser.ts`)
-  - Zod 스키마를 활용한 노션 API 응답 데이터 유효성 검증
-  - 노션 데이터베이스 스키마(F010)에 맞춘 속성 매핑 로직 구현
-  - Playwright MCP를 활용한 API 연동 통합 테스트
+- **Task-005: Notion 데이터 조회 및 타입 변환 구현** ✅ - 완료
+  - ✅ `lib/notion.ts`에 `invoices` DB 페이지 조회 함수 구현 (`notion.pages.retrieve`)
+  - ✅ `lib/notion.ts`에 `items` DB 항목 조회 함수 구현
+    - ✅ `notion.databases.query`로 `invoice` Relation 필터링
+    - ✅ `sort_order` 기준 오름차순 정렬
+  - ✅ 노션 API 응답을 `Quote` 타입으로 변환하는 파서 함수 구현 (`lib/notion.ts` 단일 파일로 통합)
+  - ✅ 노션 데이터베이스 스키마(F010)에 맞춘 속성 매핑 로직 구현
 
-- **Task-006: Notion API 오류 처리 및 캐싱 전략**
-  - 노션 API 오류 유형별 처리 로직 구현 (404 Not Found, 401 Unauthorized, 네트워크 오류)
-  - 커스텀 에러 클래스 정의 및 `QuoteError` 타입과 매핑
-  - Next.js 서버 컴포넌트 캐싱 전략 적용 (revalidate 설정)
-  - API 호출 실패 시 재시도 로직 고려 (선택)
+- **Task-006: Notion API 오류 처리 및 캐싱 전략** ✅ - 완료
+  - ✅ 노션 API 오류 유형별 처리 로직 구현 (404 Not Found, 401 Unauthorized, 네트워크 오류)
+  - ✅ `QuoteError` 타입과 매핑 (`NOT_FOUND`, `UNAUTHORIZED`, `API_ERROR`)
+  - ✅ Next.js 서버 컴포넌트에서 오류 처리 (`notFound()` 및 Error throw)
 
 ---
 
-### Phase 3: 견적서 뷰 UI 구현 (F002, F003, F011)
+### Phase 3: 견적서 뷰 UI 구현 (F002, F003, F011) 🚧
 
-- **Task-007: 견적서 뷰 페이지에 실제 데이터 연동** - 우선순위
-  - `app/quote/[pageId]/page.tsx`의 `getQuote` 함수를 Notion API 호출로 교체
-  - 데이터 조회 실패 시 오류 페이지 분기 처리 (`notFound()` 활용)
-  - 로딩 상태 UI 구현 (`app/quote/[pageId]/loading.tsx`)
-  - 견적서 제목을 동적 메타데이터에 반영
+- **Task-007: 견적서 뷰 페이지에 실제 데이터 연동** ✅ - 완료
+  - ✅ `app/quote/[pageId]/page.tsx`에서 `lib/notion.ts`의 `getQuote` 함수 사용
+  - ✅ 데이터 조회 실패 시 오류 페이지 분기 처리 (`notFound()` 활용)
+  - ✅ 견적서 제목을 동적 메타데이터에 반영 (`generateMetadata`)
 
 - **Task-008: 금액 계산 유틸리티 및 포맷팅 함수 분리**
   - `lib/utils/currency.ts`에 금액 포맷팅 유틸리티 함수 구현 (원화 형식, 천단위 콤마)
