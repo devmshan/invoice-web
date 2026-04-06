@@ -21,7 +21,7 @@
 
 ## 기술 스택
 
-- **Framework**: Next.js 15.5.3 (App Router + Turbopack)
+- **Framework**: Next.js 15.5.14 (App Router + Turbopack)
 - **Runtime**: React 19.1.0
 - **Language**: TypeScript 5
 - **Styling**: TailwindCSS v4

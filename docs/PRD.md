@@ -160,7 +160,7 @@ invoice-web 내비게이션
 
 ### 프론트엔드 프레임워크
 
-- **Next.js 15.5.3** (App Router + Turbopack) - React 풀스택 프레임워크, SSR로 노션 API 서버사이드 조회
+- **Next.js 15.5.14** (App Router + Turbopack) - React 풀스택 프레임워크, SSR로 노션 API 서버사이드 조회
 - **TypeScript 5** - 타입 안전성 보장, 노션 API 응답 타입 정의
 - **React 19.1.0** - UI 라이브러리
 

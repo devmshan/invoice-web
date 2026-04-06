@@ -47,7 +47,7 @@ invoice-web은 견적서를 보내는 프리랜서/1인 업체(발행자)와 견
 ### Phase 1: 프로젝트 초기 설정 ✅
 
 - **Task-001: Next.js 프로젝트 초기화 및 기본 설정** ✅ - 완료
-  - ✅ Next.js 15.5.3 (App Router + Turbopack) 프로젝트 생성
+  - ✅ Next.js 15.5.14 (App Router + Turbopack) 프로젝트 생성
   - ✅ TypeScript 5, TailwindCSS v4, shadcn/ui (new-york style) 설정
   - ✅ ESLint + Prettier + Husky + lint-staged 개발 도구 구성
   - ✅ 기본 프로젝트 디렉토리 구조 확립 (`app/`, `components/`, `lib/`)
@@ -170,8 +170,9 @@ invoice-web은 견적서를 보내는 프리랜서/1인 업체(발행자)와 견
   - ✅ `globals.css` `--font-sans` 순환참조 버그 수정
   - ✅ `app/quote/[pageId]/loading.tsx` 로딩 스켈레톤 UI 추가
 
-- **Task-013: Vercel 배포 및 운영 환경 구성** - 우선순위
-  - 프로덕션 빌드 검증 (`npm run build` 및 `npm run check-all` 성공 확인)
+- **Task-013: Vercel 배포 및 운영 환경 구성** 🚧 - 진행 중
+  - ✅ 프로덕션 빌드 검증 (`npm run build` 및 `npm run check-all` 성공 확인)
+  - ✅ git push 완료
   - Vercel 프로젝트 생성 및 GitHub 연동
   - Vercel 환경 변수 설정 (`NOTION_API_KEY`, `NOTION_DATABASE_ID`)
   - 커스텀 도메인 설정 (선택)
@@ -198,3 +199,11 @@ invoice-web은 견적서를 보내는 프리랜서/1인 업체(발행자)와 견
   - ✅ IP 기반 슬라이딩 윈도우 방식 (1분당 30회 제한)
   - ✅ `/quote/:path*` 경로에만 적용, 초과 시 429 응답 + `Retry-After` 헤더
   - ✅ 요청 로깅 통합 (Edge Runtime 제약으로 console.info 사용)
+
+- **Task-017: CVE 보안 취약점 수정 및 의존성 업데이트** ✅ - 완료
+  - ✅ Next.js 15.5.3 → 15.5.14 업그레이드
+  - ✅ npm audit 취약점 15건 → 0건 전체 해결
+  - ✅ Critical CVE 수정: GHSA-9qr9-h5gf-34mp (React flight protocol RCE)
+  - ✅ 주요 CVE 수정: RSC HTTP deserialization DoS, Server Components DoS, Server Actions 소스 코드 노출
+  - ✅ 기타 의존성 취약점 수정: brace-expansion, minimatch, tar, picomatch 등 11건
+  - ✅ `npm run check-all` 통과 및 `npm run build` 성공 확인

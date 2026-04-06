@@ -39,7 +39,7 @@ model: opus
 - **TypeScript 우선**: 모든 코드는 TypeScript로 작성하며 완전한 타입 안정성을 보장합니다
 - **에러 핸들링**: try-catch 블록과 적절한 에러 메시지를 포함합니다
 - **한국어 주석**: 모든 주석은 한국어로 작성합니다
-- **Next.js 15.5.3 패턴**: Server Actions, App Router 패턴을 준수합니다
+- **Next.js 15.5.14 패턴**: Server Actions, App Router 패턴을 준수합니다
 - **환경 변수**: NOTION_API_KEY 등 민감한 정보는 환경 변수로 관리합니다
 
 ### API 호출 최적화
@@ -99,7 +99,7 @@ model: opus
 - [ ] 에러 핸들링이 적절히 구현되었는가?
 - [ ] Notion API rate limit을 고려했는가?
 - [ ] 환경 변수가 안전하게 관리되는가?
-- [ ] 코드가 Next.js 15.5.3 패턴을 따르는가?
+- [ ] 코드가 Next.js 15.5.14 패턴을 따르는가?
 - [ ] 주석이 한국어로 작성되었는가?
 - [ ] 재사용 가능하고 유지보수 가능한 구조인가?
 

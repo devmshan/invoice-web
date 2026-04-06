@@ -4,7 +4,7 @@
 
 노션 API 기반 견적서 공유/PDF 다운로드 서비스. 자체 DB 없음, 인증 없음, 서버 컴포넌트에서 Notion API 실시간 조회.
 
-- **Framework**: Next.js 15.5.3 App Router + Turbopack
+- **Framework**: Next.js 15.5.14 App Router + Turbopack
 - **Styling**: TailwindCSS v4 + shadcn/ui (new-york)
 - **Data Source**: Notion API only (`@notionhq/client`)
 - **PDF**: `window.print()` + `@media print` CSS
