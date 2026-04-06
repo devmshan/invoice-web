@@ -78,3 +78,7 @@ logs/
 *.tmp
 *.swp
 *.swo
+
+# playwright
+.playwright-mcp/
+test-*.png
