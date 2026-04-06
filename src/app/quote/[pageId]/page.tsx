@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import type { Quote } from "@/lib/types";
+import { getQuote } from "@/lib/notion";
 import { PdfDownloadButton } from "./_components/pdf-download-button";
 
 interface QuotePageProps {
@@ -11,26 +11,28 @@ export async function generateMetadata({
   params,
 }: QuotePageProps): Promise<Metadata> {
   const { pageId } = await params;
+  const result = await getQuote(pageId);
+  if ("error" in result) {
+    return { title: `견적서 | Invoice Web` };
+  }
   return {
-    title: `견적서 | Invoice Web`,
-    description: `견적서 ID: ${pageId}`,
+    title: `${result.data.title} | Invoice Web`,
+    description: `${result.data.issuer_name}의 견적서`,
   };
-}
-
-// TODO: Notion API 연동 후 실제 데이터 조회로 교체
-async function getQuote(pageId: string): Promise<Quote | null> {
-  // 구현 예정: notion.pages.retrieve({ page_id: pageId })
-  void pageId;
-  return null;
 }
 
 export default async function QuotePage({ params }: QuotePageProps) {
   const { pageId } = await params;
-  const quote = await getQuote(pageId);
+  const result = await getQuote(pageId);
 
-  if (!quote) {
-    notFound();
+  if ("error" in result) {
+    if (result.error === "NOT_FOUND") {
+      notFound();
+    }
+    throw new Error(`견적서를 불러올 수 없습니다. (${result.error})`);
   }
+
+  const quote = result.data;
 
   const isExpired = new Date(quote.valid_until) < new Date();
   const subtotal = quote.items.reduce(

@@ -4,6 +4,8 @@ export type QuoteItem = {
   unit_price: number;
 };
 
+export type QuoteStatus = "pending" | "accepted" | "rejected";
+
 export type Quote = {
   id: string; // 노션 페이지 ID
   title: string;
@@ -15,6 +17,7 @@ export type Quote = {
   client_name: string;
   client_company: string;
   note: string;
+  status: QuoteStatus;
   items: QuoteItem[];
 };
 
