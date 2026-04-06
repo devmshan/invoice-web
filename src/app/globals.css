@@ -6,7 +6,7 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-sans);
+  --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
   --font-heading: var(--font-sans);
   --color-chart-5: var(--chart-5);
@@ -101,5 +101,45 @@
   }
   html {
     @apply font-sans;
+  }
+}
+
+@media print {
+  /* 라이트 모드 강제 적용 */
+  :root {
+    --background: oklch(1 0 0);
+    --foreground: oklch(0.145 0 0);
+    --card: oklch(1 0 0);
+    --card-foreground: oklch(0.145 0 0);
+    --muted: oklch(0.97 0 0);
+    --muted-foreground: oklch(0.556 0 0);
+    --border: oklch(0.922 0 0);
+    --primary: oklch(0.205 0 0);
+    --primary-foreground: oklch(0.985 0 0);
+  }
+
+  /* A4 용지 설정 */
+  @page {
+    size: A4;
+    margin: 16mm 12mm;
+  }
+
+  /* 배경 색상 출력 허용 */
+  * {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* 인쇄 시 숨길 요소 */
+  .print\:hidden {
+    display: none !important;
+  }
+
+  /* 페이지 나눔 방지 */
+  table,
+  tr,
+  td,
+  th {
+    page-break-inside: avoid;
   }
 }
