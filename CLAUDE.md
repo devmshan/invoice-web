@@ -36,6 +36,18 @@ npm run check-all   # 모든 검사 통합 실행 (권장)
 npx shadcn@latest add button    # 새 컴포넌트 추가
 ```
 
+## ⚠️ 구현 및 수정 시 필수 사항
+
+**파일 수정 후 반드시 린터와 포맷 검사를 실행해야 합니다.**
+
+```bash
+npm run check-all   # lint + format + type 검사 통합 실행 (필수)
+```
+
+- 구현 중 파일을 수정할 때마다 실행
+- 에러가 있으면 다음 단계로 넘어가지 말 것
+- 포맷 오류는 `npm run format`으로 자동 수정 가능
+
 ## ✅ 작업 완료 체크리스트
 
 ```bash

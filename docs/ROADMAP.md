@@ -86,70 +86,115 @@ invoice-web은 견적서를 보내는 프리랜서/1인 업체(발행자)와 견
   - ✅ 노션 API 응답을 `Quote` 타입으로 변환하는 파서 함수 구현 (`lib/notion.ts` 단일 파일로 통합)
   - ✅ 노션 데이터베이스 스키마(F010)에 맞춘 속성 매핑 로직 구현
 
-- **Task-006: Notion API 오류 처리 및 캐싱 전략** ✅ - 완료
+- **Task-006: Notion API 오류 처리** ✅ - 완료
   - ✅ 노션 API 오류 유형별 처리 로직 구현 (404 Not Found, 401 Unauthorized, 네트워크 오류)
   - ✅ `QuoteError` 타입과 매핑 (`NOT_FOUND`, `UNAUTHORIZED`, `API_ERROR`)
   - ✅ Next.js 서버 컴포넌트에서 오류 처리 (`notFound()` 및 Error throw)
 
 ---
 
-### Phase 3: 견적서 뷰 UI 구현 (F002, F003, F011) 🚧
+### Phase 3: 견적서 뷰 UI 구현 (F002, F003, F011) ✅
 
 - **Task-007: 견적서 뷰 페이지에 실제 데이터 연동** ✅ - 완료
   - ✅ `app/quote/[pageId]/page.tsx`에서 `lib/notion.ts`의 `getQuote` 함수 사용
   - ✅ 데이터 조회 실패 시 오류 페이지 분기 처리 (`notFound()` 활용)
   - ✅ 견적서 제목을 동적 메타데이터에 반영 (`generateMetadata`)
 
-- **Task-008: 금액 계산 유틸리티 및 포맷팅 함수 분리**
-  - `lib/utils/currency.ts`에 금액 포맷팅 유틸리티 함수 구현 (원화 형식, 천단위 콤마)
-  - 금액 계산 로직을 별도 유틸리티로 분리 (소계 합산, 세금 계산, 합계)
-  - 견적서 뷰 컴포넌트를 세분화하여 분리 (QuoteHeader, QuoteParties, QuoteItemsTable, QuoteSummary)
-  - Playwright MCP를 활용한 금액 계산 정확성 및 포맷팅 테스트
+- **Task-008: 금액 계산 유틸리티 및 포맷팅 함수 분리** ✅ - 완료
+  - See: `/tasks/008-currency-utils.md`
+  - ✅ `lib/utils/currency.ts`에 금액 포맷팅 유틸리티 함수 구현 (`formatKRW`, `calcQuoteTotals`)
+  - ✅ 금액 계산 로직을 별도 유틸리티로 분리 (소계 합산, 세금 계산, 합계)
+  - ✅ 견적서 뷰 컴포넌트를 세분화하여 분리 (QuoteHeader, QuoteParties, QuoteItemsTable, QuoteSummary)
+  - ✅ 견적서 뷰 페이지를 분리된 컴포넌트 조합으로 단순화
 
-- **Task-009: 견적서 핵심 기능 통합 테스트**
-  - Playwright MCP를 사용한 견적서 뷰 페이지 전체 플로우 테스트
-  - 노션 API 연동 데이터가 올바르게 렌더링되는지 검증
-  - 금액 계산 정확성 검증 (소계, 세금, 합계)
-  - 유효기간 만료/유효 상태별 UI 표시 검증
-  - 에러 핸들링 및 엣지 케이스 테스트 (빈 항목, 잘못된 ID 등)
-
----
-
-### Phase 4: PDF 다운로드 구현 (F004)
-
-- **Task-010: PDF 다운로드 기능 완성** - 우선순위
-  - `PdfDownloadButton` 컴포넌트에 `window.print()` 호출 로직 구현
-  - `@media print` CSS 스타일 최적화 (인쇄 시 불필요 요소 숨김: 헤더, 푸터, 다운로드 버튼)
-  - 인쇄 시 페이지 여백, 용지 크기(A4), 배경 색상 설정
-  - 인쇄 미리보기에서 견적서가 단일 페이지에 깔끔하게 출력되는지 레이아웃 검증
-  - Playwright MCP를 활용한 PDF 다운로드 플로우 테스트
+- **Task-009: 견적서 핵심 기능 통합 테스트** ✅ - 완료
+  - See: `/tasks/009-integration-test.md`
+  - ✅ 정상 견적서 렌더링 검증 (제목, 발행자/수신자 정보, 항목 테이블)
+  - ✅ 금액 계산 정확성 검증 (소계, 세금 10%, 합계)
+  - ✅ 유효한 견적서 접근 시 만료 배너 미표시 확인
+  - ✅ 만료된 견적서 접근 시 만료 배너 표시 및 유효기간 빨간색 강조 확인
+  - ✅ 존재하지 않는 UUID 접근 시 404 페이지 표시 검증
+  - ✅ 잘못된 형식 ID 접근 시 API 에러 페이지 표시 검증
 
 ---
 
-### Phase 5: 오류 처리 (F005)
+### Phase 4: PDF 다운로드 구현 (F004) ✅
 
-- **Task-011: 오류 페이지 및 만료 처리 구현** - 우선순위
-  - `app/quote/[pageId]/not-found.tsx` 커스텀 404 페이지 구현 (존재하지 않는 견적서 안내)
-  - `app/quote/[pageId]/error.tsx` 에러 바운더리 구현 (API 오류 등 예외 처리)
-  - 오류 유형별 안내 메시지 차별화 (존재하지 않음, API 오류, 인증 오류)
-  - 만료된 견적서 접근 시 만료 안내 배너 표시 (페이지 내용은 유지, 상단 경고 배지)
-  - 발행자에게 문의 안내 메시지 표시
-  - Playwright MCP를 활용한 오류 시나리오별 E2E 테스트
+- **Task-010a: PDF 다운로드 버튼 구현** ✅ - 완료
+  - ✅ `PdfDownloadButton` 컴포넌트에 `window.print()` 호출 로직 구현
+  - ✅ 로딩 상태 처리 (인쇄 다이얼로그 열리는 동안 `Loader2` 스피너 표시)
+  - ✅ 접근성 속성 적용 (`aria-label`)
+  - 관련 파일: `src/app/quote/[pageId]/_components/pdf-download-button.tsx`
+
+- **Task-010b: 인쇄 CSS 최적화** ✅ - 완료
+  - ✅ `@media print` 스타일 전역 CSS에 추가
+  - ✅ `print:hidden` 유틸리티 클래스로 불필요 요소 숨김 처리
+  - ✅ A4 용지 크기, 여백(16mm/12mm) 설정
+  - ✅ 배경 색상 출력 허용 (`print-color-adjust: exact`)
+  - ✅ 라이트 모드 강제 적용 (다크 모드 CSS 변수 오버라이드)
+  - ✅ 테이블 행 페이지 나눔 방지 (`page-break-inside: avoid`)
+  - 관련 파일: `src/app/globals.css`
+
+- **Task-010c: 인쇄 레이아웃 검증 및 테스트** ✅ - 완료
+  - ✅ Playwright MCP로 `@media print` CSS 규칙 7개 전체 로드 확인
+  - ✅ `.print\:hidden { display: none !important; }` 규칙 존재 확인
+  - ✅ `@page { size: a4; margin: 16mm 12mm; }` A4 설정 확인
+  - ✅ `print-color-adjust: exact` 배경 색상 출력 확인
+  - ✅ `break-inside: avoid` 테이블 페이지 나눔 방지 확인
+  - ✅ `page.tsx` 코드 리뷰로 만료 배너/PDF 버튼에 `print:hidden` 클래스 적용 확인
+
+---
+
+### Phase 5: 오류 처리 (F005) ✅
+
+- **Task-011: 오류 페이지 및 만료 처리 구현** ✅ - 완료
+  - See: `/tasks/011-error-pages.md`
+  - ✅ `app/quote/[pageId]/not-found.tsx` 커스텀 404 페이지 구현 (존재하지 않는 견적서 안내 + 홈으로 돌아가기 링크)
+  - ✅ `app/quote/[pageId]/error.tsx` 에러 바운더리 구현 (`'use client'` 적용, error/reset props, 오류 코드 표시, 다시 시도 버튼)
+  - ✅ 기존 전역 오류 페이지 패턴(Container, 메시지 구조) 일관성 유지
+  - ✅ Playwright MCP로 UUID not-found / API error 페이지 렌더링 모두 확인
 
 ---
 
 ### Phase 6: 배포 (Vercel)
 
-- **Task-012: 전체 UI 다듬기 및 반응형 최적화** - 우선순위
-  - 견적서 뷰 페이지 반응형 레이아웃 최적화 (모바일에서도 테이블 가독성 확보)
-  - 인쇄 시 라이트 모드 강제 적용
-  - SEO 메타 태그 및 OG 이미지 설정
-  - 접근성(a11y) 점검 및 개선
-  - Playwright MCP를 활용한 반응형 UI 테스트
+- **Task-012: 전체 UI 다듬기 및 반응형 최적화** ✅ - 완료
+  - See: `/tasks/012-ui-polish.md`
+  - ✅ `generateMetadata`에 `openGraph` 태그 추가 (title, description, type: "website")
+  - ✅ 모든 quote 컴포넌트 반응형 점검 완비 확인
+    - `quote-items-table.tsx`: `overflow-x-auto` + `min-w-[480px]`
+    - `quote-parties.tsx`: `sm:grid-cols-2`
+    - `quote-header.tsx`: `sm:flex-row sm:items-start sm:justify-between`
+    - `quote-summary.tsx`: `w-full sm:w-72`
+  - ✅ Playwright MCP 모바일 375px 뷰포트 스크린샷 검증 완료
+  - ✅ `globals.css` `--font-sans` 순환참조 버그 수정
+  - ✅ `app/quote/[pageId]/loading.tsx` 로딩 스켈레톤 UI 추가
 
-- **Task-013: Vercel 배포 및 운영 환경 구성**
+- **Task-013: Vercel 배포 및 운영 환경 구성** - 우선순위
   - 프로덕션 빌드 검증 (`npm run build` 및 `npm run check-all` 성공 확인)
   - Vercel 프로젝트 생성 및 GitHub 연동
   - Vercel 환경 변수 설정 (`NOTION_API_KEY`, `NOTION_DATABASE_ID`)
   - 커스텀 도메인 설정 (선택)
   - 배포 후 실제 노션 데이터로 E2E 검증
+
+---
+
+### Phase 7: 운영 안정성 강화 ✅
+
+- **Task-014: 구조화된 로깅 시스템 구축** ✅ - 완료
+  - ✅ pino 라이브러리 기반 구조화된 JSON 로거 구현 (`src/lib/logger.ts`)
+  - ✅ Notion API 에러 로깅 적용 (`src/lib/notion.ts` catch 블록에 logger.warn/error)
+  - ✅ 개발(pino-pretty)/프로덕션(JSON) 환경별 로그 레벨 분리
+  - ✅ `.env.example`에 `LOG_LEVEL` 환경변수 추가
+
+- **Task-015: Notion API 캐싱 전략 구현** ✅ - 완료
+  - ✅ Layer1: `fetchQuoteFromNotion` (실제 API 호출)
+  - ✅ Layer2: `unstable_cache`로 크로스 요청 캐싱 (60초 TTL)
+  - ✅ Layer3: React `cache()`로 요청 내 중복제거
+  - ✅ 에러 응답 캐싱 방지 (throw 방식으로 처리)
+
+- **Task-016: Rate Limiting 미들웨어 구현** ✅ - 완료
+  - ✅ `src/middleware.ts` 신규 생성 (Edge Runtime 호환)
+  - ✅ IP 기반 슬라이딩 윈도우 방식 (1분당 30회 제한)
+  - ✅ `/quote/:path*` 경로에만 적용, 초과 시 429 응답 + `Retry-After` 헤더
+  - ✅ 요청 로깅 통합 (Edge Runtime 제약으로 console.info 사용)
