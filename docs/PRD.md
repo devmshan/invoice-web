@@ -63,15 +63,20 @@
 | **F010** | 노션 데이터베이스 스키마 정의 | 견적서 데이터를 저장할 노션 데이터베이스 속성 구조 정의      | 데이터 연동의 기반 | (노션 설정, 코드 내 타입 정의) |
 | **F011** | 유효기간 표시 및 만료 판별    | 유효기간 날짜를 표시하고 현재 날짜와 비교하여 만료 여부 판별 | 견적서 유효성 확인 | 견적서 뷰 페이지, 오류 페이지  |
 
-### 3. MVP 이후 기능 (제외)
+### 3. 고도화 기능 (MVP 이후)
 
-- 회원가입/로그인 (발행자 어드민)
-- 견적서 승인/거절 플로우
-- 결제 연동
-- 이메일 자동 발송
-- 다국어 지원
-- 견적서 목록 관리 페이지
-- 견적서 상태 관리 (초안/발송/승인)
+| 상태 | 기능명 | 설명 |
+| ---- | ------ | ---- |
+| ✅ 완료 | 관리자 로그인 | jose JWT + bcryptjs 인증, Vercel KV 비밀번호 저장 |
+| ✅ 완료 | 견적서 목록 관리 페이지 | Notion DB 연동 목록 조회, 상태별 필터/검색 |
+| ✅ 완료 | 견적서 상태 관리 | draft/sent/accepted/rejected 상태 변경 및 접근 제어 |
+| 대기 | 링크 복사 기능 | Clipboard API 기반 견적서 URL 복사 |
+| 대기 | 이메일 발송 | Resend API 기반 견적서 링크 이메일 전송 |
+| 대기 | 비밀번호 변경 | Vercel KV 기반 관리자 비밀번호 변경 |
+| 대기 | 이메일 발송 설정 관리 | 발신 이메일, 템플릿 설정 |
+| 대기 | 다크모드 | next-themes 기반 시스템/수동 테마 전환 |
+| 제외 | 결제 연동 | - |
+| 제외 | 다국어 지원 | - |
 
 ### 4. 비기능 요구사항 (NFR)
 
@@ -90,12 +95,23 @@
 invoice-web 내비게이션
 
 공개 페이지 (인증 불필요)
-├── 홈 (랜딩)
+├── 홈 (랜딩)                          /
 │   └── 기능: 서비스 소개 및 진입점
-├── 견적서 뷰
-│   └── 기능: F001 (노션 데이터 조회), F002 (견적서 렌더링), F003 (금액 계산), F004 (PDF 다운로드), F011 (유효기간 표시)
+├── 견적서 뷰                          /quote/[pageId]
+│   └── 기능: F001, F002, F003, F004, F011
+│   └── draft 상태 접근 시 "확인할 수 없습니다" 안내
 └── 오류 페이지
-    └── 기능: F005 (오류/만료 처리), F011 (만료 판별)
+    └── 기능: F005, F011
+
+관리자 페이지 (JWT 인증 필요)
+├── 로그인                              /admin/login
+│   └── 이메일 + 비밀번호 인증
+├── 견적서 관리 (목록)                  /admin/quotes
+│   └── 상태별 필터링, 검색, 상세보기 링크
+├── 견적서 상세                         /admin/quotes/[pageId]
+│   └── 견적서 뷰 + 상태 변경 + 액션 버튼 (이메일/링크 비활성)
+└── 내 정보 (미구현)                    /admin/settings
+    └── 비밀번호 변경 (예정)
 ```
 
 ---
@@ -172,7 +188,14 @@ invoice-web 내비게이션
 
 ### 폼 & 검증
 
-- **Zod** - 노션 API 응답 데이터 유효성 검증
+- **React Hook Form** + **@hookform/resolvers** - 폼 상태 관리 (로그인 폼 등)
+- **Zod** - 노션 API 응답 데이터, 환경변수, 인증 입력 유효성 검증
+
+### 인증 & 보안
+
+- **jose** - JWT 발급/검증 (HS256, Edge Runtime 호환)
+- **bcryptjs** - 비밀번호 해싱 (SALT_ROUNDS=12)
+- **@vercel/kv** - 관리자 비밀번호 해시 저장 (Redis 기반)
 
 ### 외부 API 연동
 
@@ -236,3 +259,23 @@ invoice-web 내비게이션
 - NFR-001~NFR-003: 전체 구현 완료
 - Vercel 배포 및 운영 환경 구성 완료
 - 보안 취약점 수정 완료 (Next.js 15.5.14)
+
+**Phase 8: 보안 인프라 및 인증 시스템 완료** (2026-04-07)
+
+- Zod 기반 환경변수 검증 및 Vercel KV 클라이언트 구성 완료
+- UUID v4 pageId 사전 검증, QuoteStatus 타입 확장 (draft/sent/accepted/rejected)
+- jose 기반 JWT 인증 (HS256, Edge Runtime 호환) 및 bcryptjs 비밀번호 해싱 구현
+- requireAdmin() 가드 함수, 로그인/로그아웃 Server Actions 구현
+- HTTP 보안 헤더 5종 적용 (CSP, X-Frame-Options 등)
+- securityLogger/auditLogger 감사 로깅 시스템 구축
+- 미들웨어 전면 재작성: 경로별 Rate Limit, 브루트포스 방어, 슬라이딩 세션 갱신
+
+**Phase 9~10: 관리자 대시보드 및 상태 관리 완료** (2026-04-08)
+
+- 관리자 로그인 페이지 UI (React Hook Form + Zod + useActionState)
+- 관리자 보호 레이아웃 (route group `(protected)`, AdminSidebar, AdminHeader)
+- 견적서 목록 페이지 (Notion DB 연동, 상태별 필터/검색)
+- 견적서 상세 페이지 (기존 뷰 컴포넌트 재활용 + 관리자 액션)
+- 상태 변경 기능 (getQuoteList, updateQuoteStatus, getQuoteAdmin + Server Action)
+- 상태 변경 확인 다이얼로그, auditLogger 감사 로그, revalidatePath 캐시 무효화
+- draft 상태 견적서 수신자 접근 차단 (DRAFT_ACCESS_DENIED 에러 처리)

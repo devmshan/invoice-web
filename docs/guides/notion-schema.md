@@ -18,7 +18,7 @@ invoice-web에서 사용하는 노션 데이터베이스 구조 정의입니다.
 | client_name    | Text           | 수신자 이름                                      |
 | client_company | Text           | 수신자 회사명                                    |
 | note           | Text           | 견적서 하단 메모                                 |
-| status         | Select         | 견적서 상태: `pending` / `accepted` / `rejected` |
+| status         | Status         | 견적서 상태: `draft` / `sent` / `accepted` / `rejected` |
 
 ---
 
@@ -57,7 +57,7 @@ NOTION_ITEMS_DATABASE_ID=items_db_id
 
 ```typescript
 // src/lib/types.ts
-type QuoteStatus = "pending" | "accepted" | "rejected";
+type QuoteStatus = "draft" | "sent" | "accepted" | "rejected";
 
 type QuoteItem = {
   item_name: string; // items.title
