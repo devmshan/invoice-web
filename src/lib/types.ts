@@ -4,7 +4,7 @@ export type QuoteItem = {
   unit_price: number;
 };
 
-export type QuoteStatus = "pending" | "accepted" | "rejected";
+export type QuoteStatus = "draft" | "sent" | "accepted" | "rejected";
 
 export type Quote = {
   id: string; // 노션 페이지 ID
@@ -21,4 +21,9 @@ export type Quote = {
   items: QuoteItem[];
 };
 
-export type QuoteError = "NOT_FOUND" | "EXPIRED" | "API_ERROR" | "UNAUTHORIZED";
+export type QuoteError =
+  | "NOT_FOUND"
+  | "EXPIRED"
+  | "API_ERROR"
+  | "UNAUTHORIZED"
+  | "DRAFT_ACCESS_DENIED";

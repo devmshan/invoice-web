@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getQuote } from "@/lib/notion";
+import { pageIdSchema } from "@/lib/schemas/quote";
 import { calcQuoteTotals } from "@/lib/utils/currency";
 import { PdfDownloadButton } from "./_components/pdf-download-button";
 import { QuoteHeader } from "./_components/quote-header";
@@ -16,8 +17,14 @@ export async function generateMetadata({
   params,
 }: QuotePageProps): Promise<Metadata> {
   const { pageId } = await params;
+  if (!pageIdSchema.safeParse(pageId).success) {
+    return { title: `견적서 | Invoice Web` };
+  }
   const result = await getQuote(pageId);
   if ("error" in result) {
+    if (result.error === "DRAFT_ACCESS_DENIED") {
+      return { title: `견적서 | Invoice Web` };
+    }
     return { title: `견적서 | Invoice Web` };
   }
   return {
@@ -33,11 +40,28 @@ export async function generateMetadata({
 
 export default async function QuotePage({ params }: QuotePageProps) {
   const { pageId } = await params;
+  if (!pageIdSchema.safeParse(pageId).success) {
+    notFound();
+  }
   const result = await getQuote(pageId);
 
   if ("error" in result) {
     if (result.error === "NOT_FOUND") {
       notFound();
+    }
+    if (result.error === "DRAFT_ACCESS_DENIED") {
+      return (
+        <main className="flex min-h-screen items-center justify-center bg-muted/30">
+          <div className="mx-auto max-w-md px-4 text-center">
+            <h1 className="mb-3 text-xl font-semibold">
+              견적서를 확인할 수 없습니다
+            </h1>
+            <p className="text-muted-foreground text-sm">
+              아직 공개되지 않은 견적서입니다. 발행자에게 문의해 주세요.
+            </p>
+          </div>
+        </main>
+      );
     }
     throw new Error(`견적서를 불러올 수 없습니다. (${result.error})`);
   }

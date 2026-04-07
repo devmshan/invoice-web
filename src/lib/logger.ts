@@ -11,3 +11,6 @@ export const logger = pino({
     },
   }),
 });
+
+export const securityLogger = logger.child({ module: "security" });
+export const auditLogger = logger.child({ module: "audit" });
