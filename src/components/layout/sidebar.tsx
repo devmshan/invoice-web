@@ -11,6 +11,7 @@ import {
   LogOut,
   PanelLeftClose,
   PanelLeftOpen,
+  type LucideIcon,
 } from "lucide-react";
 import { useMediaQuery, useLocalStorage } from "usehooks-ts";
 import { cn } from "@/lib/utils";
@@ -18,8 +19,15 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 
-// 사이드바 네비게이션 링크 정의
-const navItems = [
+// 네비게이션 아이템 타입 정의
+export interface NavItem {
+  href: string;
+  icon: LucideIcon;
+  label: string;
+}
+
+// 기존 데모용 네비게이션 항목 (기본값으로 사용)
+const demoNavItems: NavItem[] = [
   { href: "/dashboard", icon: LayoutDashboard, label: "대시보드" },
   { href: "/dashboard/analytics", icon: BarChart3, label: "분석" },
   { href: "/dashboard/users", icon: Users, label: "사용자" },
@@ -39,11 +47,30 @@ const demoUser = {
 
 interface SidebarProps {
   className?: string;
+  // 네비게이션 항목 (기본값: demoNavItems)
+  navItems?: NavItem[];
+  // 로고 링크 href (기본값: '/')
+  logoHref?: string;
+  // 로고 텍스트 — 있으면 단순 텍스트 렌더링, 없으면 기존 Next Starter 로고
+  logoText?: string;
+  // 로그아웃 영역 교체용 슬롯 — 있으면 기존 LogOut 버튼 대체
+  logoutSlot?: React.ReactNode;
 }
 
 // 데스크톱 사이드바 컴포넌트
-export function Sidebar({ className }: SidebarProps) {
+export function Sidebar({
+  className,
+  navItems,
+  logoHref,
+  logoText,
+  logoutSlot,
+}: SidebarProps) {
   const pathname = usePathname();
+  // 사용할 네비게이션 항목 결정 (주입된 값이 없으면 기존 demoNavItems 사용)
+  const items = navItems ?? demoNavItems;
+  // 로고 링크 href (기본값: '/')
+  const resolvedLogoHref = logoHref ?? "/";
+
   // 데스크톱 여부 감지 (768px 이상)
   // initializeWithValue: false → 서버/클라이언트 초기값 통일하여 hydration 오류 방지
   const isDesktop = useMediaQuery("(min-width: 768px)", {
@@ -70,11 +97,19 @@ export function Sidebar({ className }: SidebarProps) {
       <div className="flex h-16 items-center border-b px-4">
         {!collapsed && (
           <Link
-            href="/"
+            href={resolvedLogoHref}
             className="flex flex-1 items-center gap-2 font-bold text-lg"
           >
-            <span className="text-primary">Next</span>
-            <span>Starter</span>
+            {logoText ? (
+              // logoText prop이 있으면 단순 텍스트 렌더링
+              <span>{logoText}</span>
+            ) : (
+              // 없으면 기존 Next Starter 스타일 로고
+              <>
+                <span className="text-primary">Next</span>
+                <span>Starter</span>
+              </>
+            )}
           </Link>
         )}
         {/* 데스크톱에서만 접기/펼치기 토글 버튼 표시 */}
@@ -98,13 +133,11 @@ export function Sidebar({ className }: SidebarProps) {
       {/* 네비게이션 */}
       <nav className="flex-1 overflow-y-auto p-3">
         <ul className="space-y-1">
-          {navItems.map((item) => {
+          {items.map((item) => {
             const Icon = item.icon;
-            // 정확한 경로 매칭: 대시보드 홈은 exact, 나머지는 startsWith
+            // 정확한 경로 매칭: 홈은 exact, 나머지는 startsWith
             const isActive =
-              item.href === "/dashboard"
-                ? pathname === "/dashboard"
-                : pathname.startsWith(item.href);
+              pathname === item.href || pathname.startsWith(item.href + "/");
 
             return (
               <li key={item.href}>
@@ -154,14 +187,17 @@ export function Sidebar({ className }: SidebarProps) {
                   {demoUser.email}
                 </p>
               </div>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-7 w-7 shrink-0"
-                aria-label="로그아웃"
-              >
-                <LogOut className="h-3.5 w-3.5" />
-              </Button>
+              {/* logoutSlot이 있으면 해당 ReactNode로 대체, 없으면 기본 LogOut 버튼 */}
+              {logoutSlot ?? (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-7 w-7 shrink-0"
+                  aria-label="로그아웃"
+                >
+                  <LogOut className="h-3.5 w-3.5" />
+                </Button>
+              )}
             </>
           )}
         </div>

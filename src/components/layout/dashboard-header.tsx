@@ -14,14 +14,23 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { Sidebar } from "./sidebar";
+import type React from "react";
 
 interface DashboardHeaderProps {
   // 페이지 제목 (breadcrumb 역할)
   title?: string;
+  // 예제 목록으로 돌아가기 링크 표시 여부 (기본값 true — undefined이면 표시)
+  showBackLink?: boolean;
+  // Sheet 내부 Sidebar에 전달할 props
+  sidebarProps?: React.ComponentPropsWithoutRef<typeof Sidebar>;
 }
 
 // 대시보드 상단 헤더: 모바일 사이드바 + 알림 + 사용자 아바타
-export function DashboardHeader({ title }: DashboardHeaderProps) {
+export function DashboardHeader({
+  title,
+  showBackLink,
+  sidebarProps,
+}: DashboardHeaderProps) {
   return (
     <header className="flex h-16 shrink-0 items-center justify-between border-b bg-background px-4">
       <div className="flex items-center gap-3">
@@ -39,7 +48,8 @@ export function DashboardHeader({ title }: DashboardHeaderProps) {
             <SheetHeader className="sr-only">
               <SheetTitle>네비게이션</SheetTitle>
             </SheetHeader>
-            <Sidebar />
+            {/* sidebarProps가 있으면 전달, 없으면 기본 Sidebar */}
+            <Sidebar {...(sidebarProps ?? {})} />
           </SheetContent>
         </Sheet>
 
@@ -53,15 +63,17 @@ export function DashboardHeader({ title }: DashboardHeaderProps) {
 
       {/* 우측 액션 영역 */}
       <div className="flex items-center gap-2">
-        {/* 예제 목록으로 돌아가기 - Link에 buttonVariants 직접 적용 */}
-        <Link
-          href="/examples"
-          className={cn(buttonVariants({ variant: "ghost", size: "sm" }))}
-          aria-label="예제 목록으로 돌아가기"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          <span className="hidden sm:inline text-xs">예제 목록</span>
-        </Link>
+        {/* showBackLink !== false 조건으로 예제 목록으로 돌아가기 링크 조건부 렌더링 */}
+        {showBackLink !== false && (
+          <Link
+            href="/examples"
+            className={cn(buttonVariants({ variant: "ghost", size: "sm" }))}
+            aria-label="예제 목록으로 돌아가기"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            <span className="hidden sm:inline text-xs">예제 목록</span>
+          </Link>
+        )}
         <Button variant="ghost" size="icon" aria-label="알림">
           <Bell className="h-5 w-5" />
         </Button>
