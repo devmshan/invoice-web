@@ -65,18 +65,19 @@
 
 ### 3. 고도화 기능 (MVP 이후)
 
-| 상태 | 기능명 | 설명 |
-| ---- | ------ | ---- |
-| ✅ 완료 | 관리자 로그인 | jose JWT + bcryptjs 인증, Vercel KV 비밀번호 저장 |
-| ✅ 완료 | 견적서 목록 관리 페이지 | Notion DB 연동 목록 조회, 상태별 필터/검색 |
-| ✅ 완료 | 견적서 상태 관리 | draft/sent/accepted/rejected 상태 변경 및 접근 제어 |
-| 대기 | 링크 복사 기능 | Clipboard API 기반 견적서 URL 복사 |
-| 대기 | 이메일 발송 | Resend API 기반 견적서 링크 이메일 전송 |
-| 대기 | 비밀번호 변경 | Vercel KV 기반 관리자 비밀번호 변경 |
-| 대기 | 이메일 발송 설정 관리 | 발신 이메일, 템플릿 설정 |
-| 대기 | 다크모드 | next-themes 기반 시스템/수동 테마 전환 |
-| 제외 | 결제 연동 | - |
-| 제외 | 다국어 지원 | - |
+| 상태    | 기능명                  | 설명                                                |
+| ------- | ----------------------- | --------------------------------------------------- |
+| ✅ 완료 | 관리자 로그인           | jose JWT + bcryptjs 인증, Vercel KV 비밀번호 저장   |
+| ✅ 완료 | 견적서 목록 관리 페이지 | Notion DB 연동 목록 조회, 상태별 필터/검색          |
+| ✅ 완료 | 견적서 상태 관리        | draft/sent/accepted/rejected 상태 변경 및 접근 제어 |
+| ✅ 완료 | 링크 복사 기능          | Clipboard API 기반 견적서 URL 복사, sonner toast 알림 |
+| ✅ 완료 | 이메일 발송             | Resend API 기반 견적서 링크 이메일 전송, draft→sent 자동 상태 변경 |
+| ✅ 완료 | 비밀번호 변경           | Vercel KV 기반 관리자 비밀번호 변경, bcrypt 검증, 변경 후 재로그인 |
+| ✅ 완료 | 이메일 발송 설정 관리   | 발신 이메일, 제목 템플릿, 본문 추가 문구 설정, 테스트 이메일 발송 |
+| ✅ 완료 | 다크모드                | next-themes 기반 시스템/수동 테마 전환, 전체 컴포넌트 다크모드 적용 |
+| ✅ 완료 | 콤보 버튼 UI            | Split Button 컴포넌트 (기본 액션 + 드롭다운 추가 액션) |
+| 제외    | 결제 연동               | -                                                   |
+| 제외    | 다국어 지원             | -                                                   |
 
 ### 4. 비기능 요구사항 (NFR)
 
@@ -109,9 +110,9 @@ invoice-web 내비게이션
 ├── 견적서 관리 (목록)                  /admin/quotes
 │   └── 상태별 필터링, 검색, 상세보기 링크
 ├── 견적서 상세                         /admin/quotes/[pageId]
-│   └── 견적서 뷰 + 상태 변경 + 액션 버튼 (이메일/링크 비활성)
-└── 내 정보 (미구현)                    /admin/settings
-    └── 비밀번호 변경 (예정)
+│   └── 견적서 뷰 + 상태 변경 + 콤보 버튼 (이메일 발송/링크 복사)
+└── 설정                                /admin/settings
+    └── 계정 정보, 비밀번호 변경, 이메일 발송 설정
 ```
 
 ---
@@ -200,6 +201,7 @@ invoice-web 내비게이션
 ### 외부 API 연동
 
 - **Notion API** (`@notionhq/client`) - 견적서 데이터 소스. 서버 사이드에서만 호출 (API 키 보호). `src/lib/notion.ts`에 클라이언트 초기화, 데이터 조회, 파싱, 오류 처리 통합 구현 완료
+- **Resend** (`resend` v6.10.0) - 이메일 발송 서비스. 견적서 링크 이메일 전송, HTML/텍스트 이중 템플릿 지원
 
 ### PDF 생성
 
@@ -279,3 +281,25 @@ invoice-web 내비게이션
 - 상태 변경 기능 (getQuoteList, updateQuoteStatus, getQuoteAdmin + Server Action)
 - 상태 변경 확인 다이얼로그, auditLogger 감사 로그, revalidatePath 캐시 무효화
 - draft 상태 견적서 수신자 접근 차단 (DRAFT_ACCESS_DENIED 에러 처리)
+
+**Phase 11: 액션 콤보 버튼 완료** (2026-04-08)
+
+- ComboButton Split Button UI 컴포넌트 (기본 액션 + 드롭다운)
+- Clipboard API 기반 견적서 URL 링크 복사 + sonner toast 알림
+- Resend API 기반 이메일 발송 (HTML/텍스트 이중 템플릿)
+- 이메일 발송 확인 다이얼로그 (수신자 이메일 입력, Zod 검증)
+- draft 상태 자동 sent 전환, auditLogger 감사 로그
+
+**Phase 12: 내정보 관리 완료** (2026-04-08)
+
+- 비밀번호 변경 (현재 비밀번호 bcrypt 검증 -> 새 해시 KV 저장 -> 재로그인)
+- 비밀번호 복잡도 실시간 검증 UI (8자 이상, 대/소문자+숫자+특수문자)
+- 이메일 발송 설정 관리 (발신 주소, 제목 템플릿, 본문 추가 문구)
+- 테스트 이메일 발송 기능, Vercel KV 설정 영속화
+
+**Phase 13: 다크모드 완료** (2026-04-08)
+
+- next-themes 기반 라이트/다크/시스템 테마 전환
+- ThemeToggle 컴포넌트 (관리자 헤더 + 공개 페이지)
+- 전체 컴포넌트 다크모드 색상 보완 (QuoteStatusBadge, SendEmailDialog 등)
+- @media print 라이트 모드 강제 유지

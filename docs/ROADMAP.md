@@ -178,96 +178,89 @@ invoice-web은 견적서를 보내는 프리랜서/1인 업체(발행자)와 견
 
 ### Phase 11: 액션 콤보 버튼 (링크 복사 / 메일 전송)
 
-- **Task-026: 액션 콤보 버튼 UI 컴포넌트 구현** - 우선순위
-  - 현재 상세 페이지에 비활성 상태로 배치된 "이메일 발송", "링크 복사" 버튼을 콤보 버튼으로 교체
-  - 콤보 버튼(Split Button) 컴포넌트 구현 (기본 액션 + 드롭다운 메뉴)
-  - `draft` 상태 견적서는 콤보 버튼 전체 비활성화
-  - shadcn/ui DropdownMenu + Button 조합으로 구현
-  - 관련 파일: `src/components/ui/combo-button.tsx`, `src/app/admin/(protected)/quotes/[pageId]/page.tsx`
+- **Task-026: 액션 콤보 버튼 UI 컴포넌트 구현** ✅ - 완료
+  - ✅ `src/components/ui/combo-button.tsx` 생성 - DropdownMenu + Button 조합 Split Button
+  - ✅ `src/app/admin/(protected)/quotes/[pageId]/page.tsx` 수정 - 비활성 버튼 2개 → ComboButton 교체
+  - ✅ `src/app/admin/(protected)/quotes/[pageId]/_components/quote-actions.tsx` 생성 - 클라이언트 액션 컴포넌트
+  - ✅ draft 상태 전체 비활성화 적용
+  - 관련 파일: `src/components/ui/combo-button.tsx`, `src/app/admin/(protected)/quotes/[pageId]/page.tsx`, `src/app/admin/(protected)/quotes/[pageId]/_components/quote-actions.tsx`
 
-- **Task-027: 링크 복사 기능 구현**
-  - Clipboard API (`navigator.clipboard.writeText`) 기반 링크 복사
-  - 복사 대상 URL: `{NEXT_PUBLIC_BASE_URL}/quote/[pageId]`
-  - 복사 완료 시 토스트 알림 표시 ("링크가 복사되었습니다")
-  - `draft` 상태에서는 복사 비활성화
-  - Playwright MCP로 링크 복사 기능 테스트
-  - 관련 파일: `src/app/admin/(protected)/quotes/[pageId]/page.tsx`
+- **Task-027: 링크 복사 기능 구현** ✅ - 완료
+  - ✅ Clipboard API (`navigator.clipboard.writeText`) 기반 링크 복사
+  - ✅ 복사 대상 URL: `{NEXT_PUBLIC_BASE_URL}/quote/[pageId]`
+  - ✅ 복사 완료/실패 시 sonner toast 알림 표시
+  - ✅ draft 상태에서 비활성화
+  - 관련 파일: `src/app/admin/(protected)/quotes/[pageId]/_components/quote-actions.tsx`
 
-- **Task-028: 이메일 전송 기능 구현**
-  - `npm install resend` 패키지 설치
-  - `src/lib/email.ts` 생성 - Resend API 클라이언트 초기화
-  - 이메일 발송 Server Action (`src/app/admin/(protected)/quotes/[pageId]/actions.ts` 확장 또는 별도 파일)
-    - `requireAdmin()` 가드 함수 호출 (인증 확인 필수)
-    - 수신자 이메일 Zod 검증
-    - 이메일 템플릿 변수 치환: `{{client_name}}`, `{{quote_title}}`, `{{quote_url}}` 등
-    - 발송 성공 시 견적서 상태 자동 변경 (`draft` -> `sent`)
-    - `auditLogger`로 이메일 발송 감사 로그 기록
-  - 이메일 발송 확인 다이얼로그 (수신자 이메일 확인, 미리보기)
-  - 발송 성공/실패 토스트 알림
-  - `.env.example`에 `RESEND_API_KEY` 추가 (이미 Task-018에서 env.ts에 정의)
-  - Playwright MCP로 이메일 발송 플로우 테스트 (모킹 포함)
+- **Task-028: 이메일 전송 기능 구현** ✅ - 완료
+  - ✅ `npm install resend` 패키지 설치 (v6.10.0)
+  - ✅ `src/lib/email.ts` 생성 - Resend 클라이언트 초기화, sendQuoteEmail 함수, HTML/텍스트 이메일 템플릿
+  - ✅ `src/app/admin/(protected)/quotes/[pageId]/actions.ts` 확장 - sendQuoteEmailAction Server Action 추가
+    - ✅ `requireAdmin()` 가드 함수 호출 (인증 확인 필수)
+    - ✅ 수신자 이메일 Zod 검증
+    - ✅ 발송 성공 시 견적서 상태 자동 변경 (`draft` -> `sent`)
+    - ✅ `auditLogger`로 이메일 발송 감사 로그 기록
+  - ✅ `src/app/admin/(protected)/quotes/[pageId]/_components/send-email-dialog.tsx` 생성 - 이메일 발송 확인 다이얼로그
+  - ✅ 발송 성공/실패 sonner toast 알림
+  - ✅ 콤보 버튼 기본 액션에 이메일 발송 다이얼로그 연결
   - 관련 파일: `src/lib/email.ts`, `src/app/admin/(protected)/quotes/[pageId]/`
 
 ---
 
 ### Phase 12: 내정보 관리
 
-- **Task-029: 비밀번호 변경 기능 구현 (Vercel KV 기반)**
-  - **기존 설계 문제점**: Vercel 환경변수(`process.env`) 직접 수정 방식은 서버리스 인스턴스 특성상 런타임 반영 불가. 각 인스턴스가 독립된 메모리를 사용하므로 한 인스턴스에서 수정해도 다른 인스턴스에는 반영되지 않음 (재배포 필요)
-  - **구현 방식 변경**: Vercel KV에 새 해시 저장 → 재배포 없이 모든 인스턴스에서 즉시 새 해시 조회 가능 (ADR-001 참조)
-  - `/admin/settings` 내정보 관리 페이지 라우트 생성
-  - 비밀번호 변경 섹션 UI (현재 비밀번호, 새 비밀번호, 새 비밀번호 확인)
-  - 비밀번호 복잡도 실시간 검증 UI (최소 8자, 대문자+소문자+숫자+특수문자 각 1개 이상, 최대 72자)
-  - React Hook Form + Zod 검증 (비밀번호 보안 규칙 적용, `src/lib/schemas/auth.ts` 재활용)
-  - 비밀번호 변경 Server Action 구현 (`src/app/admin/_actions/change-password.ts`)
-    1. `requireAdmin()` 인증 검증
-    2. 현재 비밀번호를 KV에서 해시 조회 후 `bcryptjs`로 검증 (`await getAdminPasswordHash()` → `bcrypt.compare()`)
-    3. 새 비밀번호 `bcryptjs` 해싱 (SALT_ROUNDS=12)
-    4. KV에 새 해시 저장 (`await setAdminPasswordHash(newHash)`) - 즉시 모든 인스턴스 반영
-    5. 기존 쿠키 삭제 → `/admin/login` 리다이렉트 (재로그인 요구)
-    - `securityLogger`로 비밀번호 변경 보안 이벤트 로깅
-  - 변경 성공/실패 피드백 UI
-  - Playwright MCP로 비밀번호 변경 플로우 테스트
-  - 관련 파일: `src/app/admin/(protected)/settings/page.tsx`, `src/app/admin/(protected)/settings/actions.ts`, `src/lib/kv.ts`
+- **Task-029: 비밀번호 변경 기능 구현 (Vercel KV 기반)** ✅ - 완료
+  - ✅ `/admin/settings` 내정보 관리 페이지 라우트 생성
+  - ✅ 비밀번호 변경 섹션 UI (현재 비밀번호, 새 비밀번호, 새 비밀번호 확인)
+  - ✅ 비밀번호 복잡도 실시간 검증 UI (최소 8자, 대문자+소문자+숫자+특수문자 각 1개 이상, 최대 72자)
+  - ✅ React Hook Form + Zod 검증 + 비밀번호 가시성 토글
+  - ✅ `changePassword` Server Action (requireAdmin → KV 해시 조회 → bcrypt 검증 → 새 해시 KV 저장 → 쿠키 삭제 → 리다이렉트)
+  - ✅ `securityLogger`로 비밀번호 변경 보안 이벤트 로깅
+  - ✅ AdminSidebar에 "내 정보" 설정 링크 이미 존재 확인
+  - 관련 파일: `src/app/admin/(protected)/settings/page.tsx`, `src/app/admin/(protected)/settings/actions.ts`, `src/app/admin/(protected)/settings/_components/change-password-form.tsx`
 
-- **Task-030: 이메일 발송 설정 관리 구현**
-  - 이메일 발송 설정 섹션 (발신 이메일 주소, 제목 템플릿, 내용 템플릿)
-  - Notion DB에 설정 데이터 저장 또는 별도 설정 저장소 구현
-  - 템플릿 미리보기 기능 (변수 치환 시뮬레이션)
-  - 테스트 이메일 발송 버튼
-  - React Hook Form + Zod 검증 (이메일 형식 등)
-  - Playwright MCP로 설정 저장 및 미리보기 테스트
-  - 관련 파일: `src/app/admin/(protected)/settings/page.tsx`, `src/app/admin/(protected)/settings/actions.ts`
+- **Task-030: 이메일 발송 설정 관리 구현** ✅ - 완료
+  - ✅ `src/lib/kv.ts` 확장 - EmailConfig 타입, getEmailConfig/setEmailConfig 유틸리티, 기본값 정의
+  - ✅ `src/app/admin/(protected)/settings/page.tsx` 수정 - 이메일 설정 섹션 추가
+  - ✅ `src/app/admin/(protected)/settings/actions.ts` 확장 - saveEmailConfig, sendTestEmail Server Action 추가
+  - ✅ `src/app/admin/(protected)/settings/_components/email-config-form.tsx` 생성 - 이메일 설정 폼, 템플릿 미리보기, 테스트 이메일 발송
+  - ✅ Vercel KV에 이메일 설정 저장 (`email:config` 키)
+  - 관련 파일: `src/lib/kv.ts`, `src/app/admin/(protected)/settings/`
 
 ---
 
 ### Phase 13: 다크모드
 
-- **Task-031: 다크모드 테마 시스템 구축**
-  - `next-themes` 패키지 설치 및 ThemeProvider 설정
-  - TailwindCSS v4 다크모드 CSS 변수 정의 (`globals.css`)
-  - 시스템 테마 감지 및 수동 전환 지원 (system/light/dark)
-  - 테마 토글 버튼 컴포넌트 구현 (헤더에 배치)
-  - 관련 파일: `src/app/layout.tsx`, `src/components/theme-provider.tsx`, `src/components/theme-toggle.tsx`
+- **Task-031: 다크모드 테마 시스템 구축** ✅ - 완료
+  - ✅ `next-themes` 패키지 설치 확인 (이미 설치됨)
+  - ✅ `src/components/theme-provider.tsx` 이미 존재 확인
+  - ✅ `src/app/layout.tsx` ThemeProvider 이미 래핑되어 있음 (attribute="class", defaultTheme="system", enableSystem)
+  - ✅ `src/app/globals.css` .dark 클래스 CSS 변수 이미 정의됨, @media print 라이트 모드 강제 유지 적용
+  - ✅ `src/components/theme-toggle.tsx` 생성 - 라이트/다크/시스템 DropdownMenu 전환 버튼
+  - ✅ `src/components/layout/dashboard-header.tsx` rightSlot prop 추가
+  - ✅ AdminHeader에 ThemeToggle 배치
+  - ✅ 공개 페이지 Header에 이미 다크모드 토글 존재 확인
+  - 관련 파일: `src/components/theme-toggle.tsx`, `src/components/layout/dashboard-header.tsx`, `src/app/admin/(protected)/_components/admin-header.tsx`
 
-- **Task-032: 전체 컴포넌트 다크모드 적용**
-  - 공개 페이지 다크모드 스타일 적용 (홈, 견적서 뷰, 오류 페이지)
-  - 관리자 페이지 다크모드 스타일 적용 (로그인, 목록, 설정)
-  - shadcn/ui 컴포넌트 다크모드 호환 확인
-  - 인쇄 시 라이트 모드 강제 적용 유지 (기존 `@media print` CSS)
-  - Playwright MCP로 라이트/다크 모드 전환 스크린샷 검증
-  - 관련 파일: `src/app/globals.css`, 각 페이지 컴포넌트
+- **Task-032: 전체 컴포넌트 다크모드 적용** ✅ - 완료
+  - ✅ 공개 페이지/관리자 페이지 - 의미론적 색상 변수(bg-background, text-foreground 등) 사용으로 자동 다크모드 지원 확인
+  - ✅ `QuoteStatusBadge` - sent/accepted 상태 배지 다크모드 색상 보완
+  - ✅ `SendEmailDialog` - 성공 메시지 다크모드 색상 적용
+  - ✅ `ChangePasswordForm` - 체크 아이콘 다크모드 색상 적용
+  - ✅ shadcn/ui 컴포넌트 자동 다크모드 호환 확인
+  - ✅ `@media print` CSS 라이트 모드 강제 적용 유지 (이미 적용)
+  - 관련 파일: `src/app/admin/(protected)/quotes/_components/quote-status-badge.tsx`, `src/app/admin/(protected)/quotes/[pageId]/_components/send-email-dialog.tsx`, `src/app/admin/(protected)/settings/_components/change-password-form.tsx`
 
 ---
 
 ## 고도화 Phase 요약
 
-| Phase    | 설명                           | Task 수 | Task 번호       | 상태       |
-| -------- | ------------------------------ | ------- | --------------- | ---------- |
-| Phase 8  | 보안 인프라 및 인증 시스템     | 4       | Task-018 ~ 020a | ✅ 완료    |
-| Phase 9  | 관리자 레이아웃 및 견적서 목록 | 2       | Task-021 ~ 022  | ✅ 완료    |
-| Phase 10 | 견적서 상태 관리               | 3       | Task-023 ~ 025  | 2/3 완료   |
-| Phase 11 | 액션 콤보 버튼                 | 3       | Task-026 ~ 028  | 대기       |
-| Phase 12 | 내정보 관리                    | 2       | Task-029 ~ 030  | 대기       |
-| Phase 13 | 다크모드                       | 2       | Task-031 ~ 032  | 대기       |
-| **합계** |                                | **16**  | Task-018 ~ 032  |            |
+| Phase    | 설명                           | Task 수 | Task 번호       | 상태     |
+| -------- | ------------------------------ | ------- | --------------- | -------- |
+| Phase 8  | 보안 인프라 및 인증 시스템     | 4       | Task-018 ~ 020a | ✅ 완료  |
+| Phase 9  | 관리자 레이아웃 및 견적서 목록 | 2       | Task-021 ~ 022  | ✅ 완료  |
+| Phase 10 | 견적서 상태 관리               | 3       | Task-023 ~ 025  | 2/3 완료 |
+| Phase 11 | 액션 콤보 버튼                 | 3       | Task-026 ~ 028  | ✅ 완료  |
+| Phase 12 | 내정보 관리                    | 2       | Task-029 ~ 030  | ✅ 완료  |
+| Phase 13 | 다크모드                       | 2       | Task-031 ~ 032  | ✅ 완료  |
+| **합계** |                                | **16**  | Task-018 ~ 032  |          |

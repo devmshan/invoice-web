@@ -7,17 +7,17 @@ invoice-web에서 사용하는 노션 데이터베이스 구조 정의입니다.
 
 ## invoices DB (견적서)
 
-| 속성명         | 노션 속성 타입 | 설명                                             |
-| -------------- | -------------- | ------------------------------------------------ |
-| title          | Title          | 견적서 제목 (견적서 번호 포함)                   |
-| issue_date     | Date           | 발행일                                           |
-| valid_until    | Date           | 유효기간 만료일                                  |
-| issuer_name    | Text           | 발행자 이름/회사명                               |
-| issuer_contact | Phone          | 발행자 연락처                                    |
-| issuer_email   | Email          | 발행자 이메일                                    |
-| client_name    | Text           | 수신자 이름                                      |
-| client_company | Text           | 수신자 회사명                                    |
-| note           | Text           | 견적서 하단 메모                                 |
+| 속성명         | 노션 속성 타입 | 설명                                                    |
+| -------------- | -------------- | ------------------------------------------------------- |
+| title          | Title          | 견적서 제목 (견적서 번호 포함)                          |
+| issue_date     | Date           | 발행일                                                  |
+| valid_until    | Date           | 유효기간 만료일                                         |
+| issuer_name    | Text           | 발행자 이름/회사명                                      |
+| issuer_contact | Phone          | 발행자 연락처                                           |
+| issuer_email   | Email          | 발행자 이메일                                           |
+| client_name    | Text           | 수신자 이름                                             |
+| client_company | Text           | 수신자 회사명                                           |
+| note           | Text           | 견적서 하단 메모                                        |
 | status         | Status         | 견적서 상태: `draft` / `sent` / `accepted` / `rejected` |
 
 ---
