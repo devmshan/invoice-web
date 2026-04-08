@@ -23,6 +23,8 @@ interface DashboardHeaderProps {
   showBackLink?: boolean;
   // Sheet 내부 Sidebar에 전달할 props
   sidebarProps?: React.ComponentPropsWithoutRef<typeof Sidebar>;
+  // 우측 액션 영역에 추가 렌더링할 슬롯
+  rightSlot?: React.ReactNode;
 }
 
 // 대시보드 상단 헤더: 모바일 사이드바 + 알림 + 사용자 아바타
@@ -30,6 +32,7 @@ export function DashboardHeader({
   title,
   showBackLink,
   sidebarProps,
+  rightSlot,
 }: DashboardHeaderProps) {
   return (
     <header className="flex h-16 shrink-0 items-center justify-between border-b bg-background px-4">
@@ -74,6 +77,8 @@ export function DashboardHeader({
             <span className="hidden sm:inline text-xs">예제 목록</span>
           </Link>
         )}
+        {/* 추가 우측 슬롯 (테마 토글 등) */}
+        {rightSlot}
         <Button variant="ghost" size="icon" aria-label="알림">
           <Bell className="h-5 w-5" />
         </Button>

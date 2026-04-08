@@ -14,12 +14,14 @@ const statusConfig: Record<
   sent: {
     label: "발송됨",
     variant: "default",
-    className: "bg-blue-500 hover:bg-blue-600",
+    className:
+      "bg-blue-500 hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700",
   },
   accepted: {
     label: "수락됨",
     variant: "default",
-    className: "bg-green-500 hover:bg-green-600",
+    className:
+      "bg-green-500 hover:bg-green-600 dark:bg-green-600 dark:hover:bg-green-700",
   },
   rejected: { label: "거절됨", variant: "destructive", className: "" },
 };
