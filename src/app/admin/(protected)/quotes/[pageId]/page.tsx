@@ -1,18 +1,18 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Mail, Link as LinkIcon } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { requireAdmin } from "@/lib/auth-guard";
 import { getQuoteAdmin } from "@/lib/notion";
 import { calcQuoteTotals } from "@/lib/utils/currency";
 import { cn } from "@/lib/utils";
 import { buttonVariants } from "@/components/ui/button-variants";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { QuoteHeader } from "@/app/quote/[pageId]/_components/quote-header";
 import { QuoteParties } from "@/app/quote/[pageId]/_components/quote-parties";
 import { QuoteItemsTable } from "@/app/quote/[pageId]/_components/quote-items-table";
 import { QuoteSummary } from "@/app/quote/[pageId]/_components/quote-summary";
 import { StatusChangeForm } from "./_components/status-change-form";
+import { QuoteActions } from "./_components/quote-actions";
 
 interface PageProps {
   params: Promise<{ pageId: string }>;
@@ -89,17 +89,12 @@ export default async function AdminQuoteDetailPage({ params }: PageProps) {
           {/* 상태 변경 폼 (실제 Notion API 연동) */}
           <StatusChangeForm pageId={pageId} currentStatus={quote.status} />
 
-          {/* 이메일 발송 버튼 (비활성) */}
-          <Button variant="outline" disabled>
-            <Mail className="mr-2 h-4 w-4" />
-            이메일 발송
-          </Button>
-
-          {/* 링크 복사 버튼 (비활성) */}
-          <Button variant="outline" disabled>
-            <LinkIcon className="mr-2 h-4 w-4" />
-            링크 복사
-          </Button>
+          {/* 이메일 발송 + 링크 복사 콤보 버튼 */}
+          <QuoteActions
+            pageId={pageId}
+            status={quote.status}
+            quoteTitle={quote.title}
+          />
         </CardContent>
       </Card>
     </div>
